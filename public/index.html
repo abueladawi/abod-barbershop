@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حجز موعد حلاقة</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h2, h3 {
+            text-align: center;
+            color: #e0e0e0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #ff9800;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            border: none;
+        }
+        button:hover {
+            background-color: #e68a00;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .bookings-list {
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+        .booking-item {
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-right: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>✂️ صالون الحلاقة - حجز موعد</h2>
+    
+    <form id="bookingForm">
+        <div class="form-group">
+            <label for="clientName">الاسم الكامل:</label>
+            <input type="text" id="clientName" required placeholder="أدخل اسمك">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">رقم الهاتف:</label>
+            <input type="tel" id="phone" required placeholder="05x-xxxxxxx">
+        </div>
+
+        <div class="form-group">
+            <label for="service">الخدمة:</label>
+            <select id="service">
+                <option value="حلاقة شعر">حلاقة شعر</option>
+                <option value="حلاقة ذقن">حلاقة ذقن</option>
+                <option value="شعر وذقن">شعر + ذقن</option>
+                <option value="تنظيف بشرة">تنظيف بشرة</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="date">التاريخ:</label>
+            <input type="date" id="date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="time">الوقت:</label>
+            <input type="time" id="time" required>
+        </div>
+
+        <button type="submit">تأكيد الحجز</button>
+    </form>
+
+    <div id="message"></div>
+
+    <div class="bookings-list">
+        <h3>📋 الحجوزات القادمة</h3>
+        <div id="bookingsContainer">جاري تحميل الحجوزات...</div>
+    </div>
+</div>
+
+<script>
+    const bookingForm = document.getElementById('bookingForm');
+    const messageDiv = document.getElementById('message');
+    const bookingsContainer = document.getElementById('bookingsContainer');
+
+    // تحميل الحجوزات عند فتح الصفحة
+    loadBookings();
+
+    bookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const bookingData = {
+            clientName: document.getElementById('clientName').value,
+            phone: document.getElementById('phone').value,
+            service: document.getElementById('service').value,
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value
+        };
+
+        try {
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                messageDiv.style.color = '#4caf50';
+                messageDiv.textContent = data.message;
+                bookingForm.reset();
+                loadBookings(); // تحديث القائمة
+            } else {
+                messageDiv.style.color = '#f44336';
+                messageDiv.textContent = data.message;
+            }
+        } catch (err) {
+            messageDiv.style.color = '#f44336';
+            messageDiv.textContent = 'حدث خطأ أثناء الاتصال بالسيرفر!';
+        }
+    });
+
+    async function loadBookings() {
+        try {
+            const res = await fetch('/api/bookings');
+            const bookings = await res.json();
+
+            if (bookings.length === 0) {
+                bookingsContainer.innerHTML = '<p style="text-align:center; color:#888;">لا توجد حجوزات حالياً</p>';
+                return;
+            }
+
+            bookingsContainer.innerHTML = bookings.map(b => `
+                <div class="booking-item">
+                    <strong>${b.clientName}</strong> - ${b.service}<br>
+                    📅 ${b.date} | ⏰ ${b.time}
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+</script>
+
+</body>
+</html>
