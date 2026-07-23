@@ -14,7 +14,7 @@
         .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
         .slot-btn { padding: 8px; font-size: 14px; background-color: #2a2a2a; border: 1px solid #ff9800; color: #fff; cursor: pointer; border-radius: 5px; text-align: center; }
         .slot-btn.selected { background-color: #ff9800; color: #000; font-weight: bold; }
-        button[type="submit"] { background-color: #25D366; color: #fff; font-weight: bold; cursor: pointer; border: none; margin-top: 15px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button[type="submit"] { background-color: #ff9800; color: #000; font-weight: bold; cursor: pointer; border: none; margin-top: 15px; font-size: 16px; }
         #message { margin-top: 15px; text-align: center; font-weight: bold; }
     </style>
 </head>
@@ -47,15 +47,12 @@
             <label>اختر من الأوقات المتاحة:</label>
             <div id="slotsContainer" class="slots-grid">اختر التاريخ أولاً لرؤية الأوقات...</div>
         </div>
-        <button type="submit">تأكيد الحجز عبر الواتساب 📲</button>
+        <button type="submit">تأكيد الحجز 🎯</button>
     </form>
     <div id="message"></div>
 </div>
 
 <script>
-    // ⚠️ حط رقمك هنا بدون أصفار بالبداية وبدون + (مثلاً: 972521234567)
-    const BARBER_PHONE = "972500000000"; 
-
     let selectedTime = '';
     const dateInput = document.getElementById('date');
     const slotsContainer = document.getElementById('slotsContainer');
@@ -73,7 +70,7 @@
             slotsContainer.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#f44336;">جميع الأوقات محجوزة في هذا اليوم!</p>';
             return;
         }
-const BARBER_PHONE = "97253728717";
+
         slotsContainer.innerHTML = slots.map(time => `
             <div class="slot-btn" onclick="selectSlot(this, '${time}')">${time}</div>
         `).join('');
@@ -107,20 +104,8 @@ const BARBER_PHONE = "97253728717";
 
         const data = await res.json();
         if (res.ok) {
-            message.style.color = '#25D366';
-            message.textContent = 'تم تسجيل الحجز! جاري تحويلك إلى الواتساب...';
-
-            const textMessage = `مرحباً، أود تأكيد حجز موعد:%0A` +
-                                `👤 *الاسم:* ${clientName}%0A` +
-                                `📞 *رقم الهاتف:* ${phone}%0A` +
-                                `✂️ *الخدمة:* ${service}%0A` +
-                                `📅 *التاريخ:* ${date}%0A` +
-                                `⏰ *الوقت:* ${selectedTime}`;
-
-            setTimeout(() => {
-                window.location.href = `https://wa.me/${BARBER_PHONE}?text=${textMessage}`;
-            }, 1000);
-
+            message.style.color = '#4CAF50';
+            message.textContent = '🎉 تم تأكيد حجزك بنجاح! شكرًا لك.';
             form.reset();
             slotsContainer.innerHTML = 'اختر التاريخ أولاً لرؤية الأوقات...';
         } else {
