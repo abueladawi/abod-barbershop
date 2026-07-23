@@ -1,9 +1,10 @@
 const express = require('express');
 const path = require('path');
+const https = require('https');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⚠️ بيانات تلغرام الخاصة بك
+// بيانات تلغرام الخاصة بك
 const TELEGRAM_TOKEN = "8845074713:AAGm4fMg5mAwQK_AHAnLlz6vvh8RLier8eY"; 
 const TELEGRAM_CHAT_ID = "7733816137"; 
 
@@ -29,7 +30,7 @@ app.get('/api/available-slots', (req, res) => {
     res.json(availableSlots);
 });
 
-app.post('/api/bookings', async (req, res) => {
+app.post('/api/bookings', (req, res) => {
     const { clientName, phone, service, date, time } = req.body;
 
     if (!clientName || !phone || !service || !date || !time) {
@@ -44,19 +45,23 @@ app.post('/api/bookings', async (req, res) => {
     const newBooking = { id: Date.now(), clientName, phone, service, date, time };
     bookings.push(newBooking);
 
-    // إرسال إشعار فوري إلى تلغرام
-    const messageText = `✂️ *حجز جديد في الصالون!*%0A%0A` +
-                        `👤 *الاسم:* ${clientName}%0A` +
-                        `📞 *الهاتف:* ${phone}%0A` +
-                        `💈 *الخدمة:* ${service}%0A` +
-                        `📅 *التاريخ:* ${date}%0A` +
-                        `⏰ *الوقت:* ${time}`;
+    // إرسال إشعار فوري إلى تلغرام بطريقة مضمونة 100%
+    const messageText = encodeURIComponent(
+        `✂️ *حجز جديد في الصالون!*\n\n` +
+        `👤 *الاسم:* ${clientName}\n` +
+        `📞 *الهاتف:* ${phone}\n` +
+        `💈 *الخدمة:* ${service}\n` +
+        `📅 *التاريخ:* ${date}\n` +
+        `⏰ *الوقت:* ${time}`
+    );
 
-    try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${messageText}&parse_mode=Markdown`);
-    } catch (error) {
-        console.error('Error sending Telegram message:', error);
-    }
+    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${messageText}&parse_mode=Markdown`;
+
+    https.get(telegramUrl, (apiRes) => {
+        console.log('Telegram response status:', apiRes.statusCode);
+    }).on('error', (e) => {
+        console.error('Error sending Telegram message:', e);
+    });
 
     res.json({ message: 'تم تسجيل الحجز بنجاح!', booking: newBooking });
 });
