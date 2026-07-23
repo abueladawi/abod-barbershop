@@ -3,187 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حجز موعد حلاقة</title>
+    <title>حجز موعد - صالون الحلاقة</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background-color: #1e1e1e;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        h2, h3 {
-            text-align: center;
-            color: #e0e0e0;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background-color: #2a2a2a;
-            color: #fff;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background-color: #ff9800;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            border: none;
-        }
-        button:hover {
-            background-color: #e68a00;
-        }
-        #message {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .bookings-list {
-            margin-top: 30px;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-        }
-        .booking-item {
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            border-right: 4px solid #ff9800;
-        }
+        body { font-family: sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 450px; width: 100%; background-color: #1e1e1e; padding: 20px; border-radius: 12px; }
+        h2 { text-align: center; color: #ff9800; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select, button { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; box-sizing: border-box; }
+        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
+        .slot-btn { padding: 8px; font-size: 14px; background-color: #2a2a2a; border: 1px solid #ff9800; color: #fff; cursor: pointer; border-radius: 5px; text-align: center; }
+        .slot-btn.selected { background-color: #ff9800; color: #000; font-weight: bold; }
+        button[type="submit"] { background-color: #25D366; color: #fff; font-weight: bold; cursor: pointer; border: none; margin-top: 15px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        #message { margin-top: 15px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>✂️ صالون الحلاقة - حجز موعد</h2>
-    
+    <h2>✂️ حجز موعد حلاقة</h2>
     <form id="bookingForm">
         <div class="form-group">
-            <label for="clientName">الاسم الكامل:</label>
+            <label>الاسم الكامل:</label>
             <input type="text" id="clientName" required placeholder="أدخل اسمك">
         </div>
-
         <div class="form-group">
-            <label for="phone">رقم الهاتف:</label>
+            <label>رقم الهاتف:</label>
             <input type="tel" id="phone" required placeholder="05x-xxxxxxx">
         </div>
-
         <div class="form-group">
-            <label for="service">الخدمة:</label>
+            <label>الخدمة:</label>
             <select id="service">
                 <option value="حلاقة شعر">حلاقة شعر</option>
                 <option value="حلاقة ذقن">حلاقة ذقن</option>
-                <option value="شعر وذقن">شعر + ذقن</option>
-                <option value="تنظيف بشرة">تنظيف بشرة</option>
+                <option value="شعر + ذقن">شعر + ذقن</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label for="date">التاريخ:</label>
+            <label>حدد التاريخ:</label>
             <input type="date" id="date" required>
         </div>
-
         <div class="form-group">
-            <label for="time">الوقت:</label>
-            <input type="time" id="time" required>
+            <label>اختر من الأوقات المتاحة:</label>
+            <div id="slotsContainer" class="slots-grid">اختر التاريخ أولاً لرؤية الأوقات...</div>
         </div>
-
-        <button type="submit">تأكيد الحجز</button>
+        <button type="submit">تأكيد الحجز عبر الواتساب 📲</button>
     </form>
-
     <div id="message"></div>
-
-    <div class="bookings-list">
-        <h3>📋 الحجوزات القادمة</h3>
-        <div id="bookingsContainer">جاري تحميل الحجوزات...</div>
-    </div>
 </div>
 
 <script>
-    const bookingForm = document.getElementById('bookingForm');
-    const messageDiv = document.getElementById('message');
-    const bookingsContainer = document.getElementById('bookingsContainer');
+    // ⚠️ حط رقمك هنا بدون أصفار بالبداية وبدون + (مثلاً: 972521234567)
+    const BARBER_PHONE = "972500000000"; 
 
-    // تحميل الحجوزات عند فتح الصفحة
-    loadBookings();
+    let selectedTime = '';
+    const dateInput = document.getElementById('date');
+    const slotsContainer = document.getElementById('slotsContainer');
+    const form = document.getElementById('bookingForm');
+    const message = document.getElementById('message');
 
-    bookingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    dateInput.min = new Date().toISOString().split('T')[0];
+
+    dateInput.addEventListener('change', async () => {
+        selectedTime = '';
+        const res = await fetch(`/api/available-slots?date=${dateInput.value}`);
+        const slots = await res.json();
         
-        const bookingData = {
-            clientName: document.getElementById('clientName').value,
-            phone: document.getElementById('phone').value,
-            service: document.getElementById('service').value,
-            date: document.getElementById('date').value,
-            time: document.getElementById('time').value
-        };
-
-        try {
-            const res = await fetch('/api/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bookingData)
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                messageDiv.style.color = '#4caf50';
-                messageDiv.textContent = data.message;
-                bookingForm.reset();
-                loadBookings(); // تحديث القائمة
-            } else {
-                messageDiv.style.color = '#f44336';
-                messageDiv.textContent = data.message;
-            }
-        } catch (err) {
-            messageDiv.style.color = '#f44336';
-            messageDiv.textContent = 'حدث خطأ أثناء الاتصال بالسيرفر!';
+        if (slots.length === 0) {
+            slotsContainer.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#f44336;">جميع الأوقات محجوزة في هذا اليوم!</p>';
+            return;
         }
+const BARBER_PHONE = "97253728717";
+        slotsContainer.innerHTML = slots.map(time => `
+            <div class="slot-btn" onclick="selectSlot(this, '${time}')">${time}</div>
+        `).join('');
     });
 
-    async function loadBookings() {
-        try {
-            const res = await fetch('/api/bookings');
-            const bookings = await res.json();
-
-            if (bookings.length === 0) {
-                bookingsContainer.innerHTML = '<p style="text-align:center; color:#888;">لا توجد حجوزات حالياً</p>';
-                return;
-            }
-
-            bookingsContainer.innerHTML = bookings.map(b => `
-                <div class="booking-item">
-                    <strong>${b.clientName}</strong> - ${b.service}<br>
-                    📅 ${b.date} | ⏰ ${b.time}
-                </div>
-            `).join('');
-        } catch (err) {
-            console.error(err);
-        }
+    function selectSlot(element, time) {
+        document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedTime = time;
     }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selectedTime) {
+            alert('الرجاء اختيار وقت من الأوقات المتاحة!');
+            return;
+        }
+
+        const clientName = document.getElementById('clientName').value;
+        const phone = document.getElementById('phone').value;
+        const service = document.getElementById('service').value;
+        const date = dateInput.value;
+
+        const payload = { clientName, phone, service, date, time: selectedTime };
+
+        const res = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            message.style.color = '#25D366';
+            message.textContent = 'تم تسجيل الحجز! جاري تحويلك إلى الواتساب...';
+
+            const textMessage = `مرحباً، أود تأكيد حجز موعد:%0A` +
+                                `👤 *الاسم:* ${clientName}%0A` +
+                                `📞 *رقم الهاتف:* ${phone}%0A` +
+                                `✂️ *الخدمة:* ${service}%0A` +
+                                `📅 *التاريخ:* ${date}%0A` +
+                                `⏰ *الوقت:* ${selectedTime}`;
+
+            setTimeout(() => {
+                window.location.href = `https://wa.me/${BARBER_PHONE}?text=${textMessage}`;
+            }, 1000);
+
+            form.reset();
+            slotsContainer.innerHTML = 'اختر التاريخ أولاً لرؤية الأوقات...';
+        } else {
+            message.style.color = '#f44336';
+            message.textContent = data.message;
+        }
+    });
 </script>
 
 </body>
