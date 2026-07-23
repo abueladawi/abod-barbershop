@@ -4,8 +4,8 @@ const https = require('https');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// بيانات تلغرام الخاصة بك
-const TELEGRAM_TOKEN = "8845074713:AAGm4fMg5mAwQK_AHAnLlz6vvh8RLier8eY"; 
+// ⚠️ التوكن الجديد المضمون
+const TELEGRAM_TOKEN = "8845074713:AAFgiLK3VcDY48qDLq-z7VMsmmHeU6qWS0M"; 
 const TELEGRAM_CHAT_ID = "7733816137"; 
 
 app.use(express.json());
@@ -45,7 +45,7 @@ app.post('/api/bookings', (req, res) => {
     const newBooking = { id: Date.now(), clientName, phone, service, date, time };
     bookings.push(newBooking);
 
-    // إرسال إشعار فوري إلى تلغرام بطريقة مضمونة 100%
+    // إرسال الإشعار للتلغرام
     const messageText = encodeURIComponent(
         `✂️ *حجز جديد في الصالون!*\n\n` +
         `👤 *الاسم:* ${clientName}\n` +
