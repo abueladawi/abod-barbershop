@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الحلاق ✂️</title>
+    <style>
+        body { font-family: sans-serif; background-color: #121212; color: #fff; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #1e1e1e; padding: 20px; border-radius: 12px; }
+        h2 { text-align: center; color: #ff9800; }
+        .booking-card { background: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-right: 5px solid #ff9800; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📋 جدول الحجوزات (خاص بالحلاق)</h2>
+    <div id="adminBookings">جاري التحميل...</div>
+</div>
+
+<script>
+    async function loadAdminBookings() {
+        const res = await fetch('/api/admin/bookings');
+        const bookings = await res.json();
+        const container = document.getElementById('adminBookings');
+
+        if (bookings.length === 0) {
+            container.innerHTML = '<p style="text-align:center;">لا توجد حجوزات حتى الآن.</p>';
+            return;
+        }
+
+        container.innerHTML = bookings.map(b => `
+            <div class="booking-card">
+                <div>
+                    <h3>${b.clientName} (${b.phone})</h3>
+                    <p><b>الخدمة:</b> ${b.service}</p>
+                    <p><b>الموعد:</b> 📅 ${b.date} | ⏰ ${b.time}</p>
+                </div>
+                <button class="delete-btn" onclick="deleteBooking(${b.id})">إلغاء الحجز</button>
+            </div>
+        `).join('');
+    }
+
+    async function deleteBooking(id) {
+        if (confirm('هل أنت تأكد من إلغاء هذا الحجز؟')) {
+            await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' });
+            loadAdminBookings();
+        }
+    }
+
+    loadAdminBookings();
+</script>
+
+</body>
+</html>
